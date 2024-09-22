@@ -19,17 +19,23 @@
     <div class="flex-grow-1 d-flex flex-row w-100" style="height: 0px">
       <div style="width: 20%" class="ma-1 d-flex flex-column">
         <div style="height: 50%" class="bg-white rounded mb-1">
-            <DataLoader/>
+          <DataLoader />
         </div>
         <div class="flex-grow-1 bg-white rounded"></div>
       </div>
       <div class="flex-grow-1 ma-1 ml-0 d-flex flex-column">
-        <div style="height: 70%" class="bg-white rounded mb-1"></div>
-        <div class="flex-grow-1 bg-white rounded"></div>
+        <div style="height: 70%" class="bg-white rounded mb-1">
+          <MainView />
+        </div>
+        <div class="flex-grow-1 bg-white rounded"><FeatureView /></div>
       </div>
       <div style="width: 20%" class="ma-1 ml-0 d-flex flex-column">
-        <div style="height: 40%" class="bg-white rounded mb-1"></div>
-        <div class="flex-grow-1 bg-white rounded"></div>
+        <div style="height: 40%" class="bg-white rounded mb-1">
+          <HistoryView />
+        </div>
+        <div class="flex-grow-1 bg-white rounded">
+            <InfoView />
+        </div>
       </div>
     </div>
   </div>

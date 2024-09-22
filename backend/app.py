@@ -42,7 +42,14 @@ def data_loader_cm():
         all_ids = np.concatenate([all_ids, not_in_all_ids['ID'].values])
 
     all_ids.sort()
-    return {'target_ids': target_ids.tolist(), 'all_ids': all_ids.tolist()}
+    # nodes
+    nodes = np.unique(np.concatenate([edgelist[edgelist['ID'].isin(all_ids)]['src_ip'].values, edgelist[edgelist['ID'].isin(all_ids)]['dst_ip'].values]))
+    nodes = [{'ip': node} for node in nodes]
+    links = edgelist[edgelist['ID'].isin(all_ids)]
+    links.rename(columns={'src_ip': 'source'}, inplace=True)
+    links.rename(columns={'dst_ip': 'target'}, inplace=True)
+    links = links.to_dict(orient='records')
+    return {'target_ids': target_ids.tolist(), 'all_ids': all_ids.tolist(), 'nodes': nodes, 'links': links}
 
 # 启动应用
 if __name__ == '__main__':

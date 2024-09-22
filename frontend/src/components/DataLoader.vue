@@ -123,7 +123,7 @@ import * as d3 from "d3";
 import { postRequest, getRequest } from "@/utils";
 
 const types = cm_data.types;
-const max_edges_num = 5000;
+const max_edges_num = 500;
 
 export default {
   data: () => ({
@@ -346,8 +346,12 @@ export default {
                 console.log(res.data);
                 const all_ids = res.data.all_ids;
                 const target_ids = res.data.target_ids;
+                const nodes = res.data.nodes;
+                const links = res.data.links;
                 globalStore().all_ids = [...all_ids];
                 globalStore().target_ids = [...target_ids];
+                globalStore().nodes = [...nodes];
+                globalStore().links = [...links];
             });
         }
     }
@@ -355,6 +359,7 @@ export default {
   mounted() {
     if (this.tab == 0) {
       this.draw_cm(this.selected_types);
+      this.loadData();
     }
   },
 };
