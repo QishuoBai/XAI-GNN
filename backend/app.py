@@ -10,6 +10,7 @@ CORS(app)
 
 edgelist = pd.read_csv('../Experiment/datasets/TON-IoT/edgelist_ton_iot.csv')
 type_map = {'normal': 0, 'backdoor': 1, 'ddos': 2, 'dos': 3, 'injection': 4, 'password': 5, 'ransomware': 6, 'scanning': 7, 'xss': 8, 'mitm': 9}
+predictdetail = pd.read_csv('../Experiment/datasets/TON-IoT/predictdetail_ton_iot.csv')
 
 # 主页路由
 @app.route('/hello')
@@ -50,6 +51,13 @@ def data_loader_cm():
     links.rename(columns={'dst_ip': 'target'}, inplace=True)
     links = links.to_dict(orient='records')
     return {'target_ids': target_ids.tolist(), 'all_ids': all_ids.tolist(), 'nodes': nodes, 'links': links}
+
+@app.route('/api/get_predict_detail', methods=['POST'])
+def get_predict_detail():
+    data = request.get_json()
+    print(data)
+    id = data['ID']
+    return predictdetail[predictdetail['ID'] == id]['pred_origin'].values[0]
 
 # 启动应用
 if __name__ == '__main__':

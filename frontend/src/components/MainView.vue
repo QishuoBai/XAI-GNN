@@ -16,61 +16,120 @@
       <v-divider class="mb-n1"></v-divider>
       <div class="px-2">
         <div
+          v-for="(d, i) in ['train', 'test']"
+          :key="d"
+          class="d-flex flex-row align-center mt-2 cursor-pointer px-2"
+          @click="show_dataset[i] = !show_dataset[i];add_edge_color_by_filter();"
+          v-ripple
+        >
+          <v-icon
+            icon="mdi-check"
+            :size="12"
+            v-if="show_dataset[i]"
+          ></v-icon>
+          <v-icon
+            icon="mdi-close"
+            :size="12"
+            v-if="!show_dataset[i]"
+          ></v-icon>
+          <div class="text-caption ml-2">{{ d }}</div>
+        </div>
+      </div>
+      <v-divider class="mb-n1 mt-1"></v-divider>
+      <div class="px-2">
+        <div
           v-for="(type, i) in selected_types"
           :key="type"
-          class="d-flex flex-row align-center my-2 cursor-pointer px-2"
-          @click="show_types[i] = !show_types[i]"
+          class="d-flex flex-row align-center mt-2 cursor-pointer px-2"
+          @click="show_types[i] = !show_types[i];add_edge_color_by_filter();"
           v-ripple
         >
           <div
             v-if="show_types[i]"
-            class="rounded-circle"
             :style="{
               backgroundColor: type_color[i],
-              width: '10px',
-              height: '10px',
+              width: '20px',
+              height: '2px',
             }"
           ></div>
           <div
             v-if="!show_types[i]"
-            class="rounded-circle"
             :style="{
               backgroundColor: graph_link_color_bg,
-              width: '10px',
-              height: '10px',
+              width: '20px',
+              height: '2px',
             }"
           ></div>
           <div class="text-caption ml-2">{{ type }}</div>
         </div>
       </div>
-      <v-divider class="my-n1"></v-divider>
+      <v-divider class="mb-n1 mt-1"></v-divider>
       <div class="px-2">
         <div
-          v-for="(d, i) in ['train', 'test']"
-          :key="d"
           class="d-flex flex-row align-center mt-2 cursor-pointer px-2"
-          @click="show_dataset[i] = !show_dataset[i]"
+          @click="show_correct = !show_correct;add_edge_color_by_filter();"
           v-ripple
         >
           <div
-            v-if="show_dataset[i]"
-            class="rounded-circle"
+            v-if="show_correct"
             :style="{
               backgroundColor: '#000',
-              width: '10px',
-              height: '10px',
+              width: '20px',
+              height: '2px',
             }"
           ></div>
           <div
-            v-if="!show_dataset[i]"
-            class="rounded-circle"
+            v-if="!show_correct"
             :style="{
               backgroundColor: graph_link_color_bg,
-              width: '10px',
-              height: '10px',
+              width: '20px',
+              height: '2px',
             }"
           ></div>
-          <div class="text-caption ml-2">{{ d }}</div>
+          <div class="text-caption ml-2">correct</div>
+        </div>
+        <div
+          class="d-flex flex-row align-center mt-2 cursor-pointer px-2"
+          @click="show_wrong = !show_wrong;add_edge_color_by_filter();"
+          v-ripple
+        >
+          <div v-if="show_wrong" class="d-flex flex-row align-center">
+            <div style="width: 4px; height: 2px; background-color: black"></div>
+            <div
+              style="
+                width: 6px;
+                height: 2px;
+                margin: 0 3px 0 3px;
+                background-color: black;
+              "
+            ></div>
+            <div style="width: 4px; height: 2px; background-color: black"></div>
+          </div>
+          <div v-if="!show_wrong" class="d-flex flex-row align-center">
+            <div
+              :style="{
+                width: '4px',
+                height: '2px',
+                backgroundColor: graph_link_color_bg,
+              }"
+            ></div>
+            <div
+              :style="{
+                width: '6px',
+                height: '2px',
+                margin: '0 3px 0 3px',
+                backgroundColor: graph_link_color_bg,
+              }"
+            ></div>
+            <div
+              :style="{
+                width: '4px',
+                height: '2px',
+                backgroundColor: graph_link_color_bg,
+              }"
+            ></div>
+          </div>
+          <div class="text-caption ml-2">wrong</div>
         </div>
       </div>
     </div>
@@ -148,6 +207,8 @@ export default {
       simulation: null,
       show_types: [true, true, true, true, true],
       show_dataset: [true, true],
+      show_correct: true,
+      show_wrong: true,
       recommendation_cols_layout: [3, 3, 3, 3],
       show_tooltip: false,
     };
@@ -230,6 +291,23 @@ export default {
         .selectAll("line")
         .data(links)
         .join("line")
+        .attr("class", (d) => {
+            const classes = [];
+          classes.push("graph-lines");
+          classes.push("graph-lines-type-" + types[d.type]);
+          classes.push("graph-lines-pred-" + types[d.pred]);
+          if (d.type == d.pred) {
+            classes.push("graph-lines-correct");
+          } else {
+            classes.push("graph-lines-wrong");
+          }
+          if (d.is_train) {
+            classes.push("graph-lines-train");
+          } else {
+            classes.push("graph-lines-test");
+          }
+          return classes.join(" ");
+        })
         .attr("stroke", (d) => {
           const current_type = types[d.type];
           const selected_types = globalStore().selected_types;
@@ -292,6 +370,8 @@ export default {
 
         node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
       });
+      this.add_edge_color_by_filter();
+      
     },
     // Reheat the simulation when drag starts, and fix the subject position.
     dragstarted(event) {
@@ -312,6 +392,42 @@ export default {
       if (!event.active) this.simulation.alphaTarget(0);
       event.subject.fx = null;
       event.subject.fy = null;
+    },
+
+    remove_edge_color_all() {
+      d3.selectAll(".graph-lines").attr("stroke", this.graph_link_color_bg);
+    },
+    add_edge_color_by_filter() {
+      d3.selectAll(".graph-lines").attr("stroke", (d) => {
+        if (d.is_train) {
+          if (!this.show_dataset[0]) {
+            return this.graph_link_color_bg;
+          }
+        } else {
+          if (!this.show_dataset[1]) {
+            return this.graph_link_color_bg;
+          }
+        }
+        const current_type = types[d.type];
+        const selected_types = globalStore().selected_types;
+        if (!selected_types.includes(current_type)) {
+          return this.graph_link_color_bg;
+        }
+        if (!this.show_types[selected_types.indexOf(current_type)]) {
+          return this.graph_link_color_bg;
+        }
+        const is_correct = d.type == d.pred;
+        if (is_correct) {
+          if (!this.show_correct) {
+            return this.graph_link_color_bg;
+          }
+        } else {
+          if (!this.show_wrong) {
+            return this.graph_link_color_bg;
+          }
+        }
+        return this.type_color[selected_types.indexOf(current_type)];
+      });
     },
   },
   mounted() {
