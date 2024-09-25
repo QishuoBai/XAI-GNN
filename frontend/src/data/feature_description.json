@@ -1,0 +1,390 @@
+[
+    {
+        "key": "proto",
+        "is_num": false,
+        "range": [
+            "icmp",
+            "tcp",
+            "udp"
+        ],
+        "display_lable": "Protocol",
+        "description": "Transport layer protocols of flow connections",
+        "group": "Connection"
+    },
+    {
+        "key": "service",
+        "is_num": false,
+        "range": [
+            "-",
+            "dce_rpc",
+            "dhcp",
+            "dns",
+            "ftp",
+            "gssapi",
+            "http",
+            "smb",
+            "smb;gssapi",
+            "ssl"
+        ],
+        "display_lable": "Service",
+        "description": "Dynamically detected protocols, such as DNS, HTTP and SSL",
+        "group": "Connection"
+    },
+    {
+        "key": "duration",
+        "is_num": true,
+        "range": [
+            0.0,
+            93516.92917
+        ],
+        "display_lable": "Duration",
+        "description": "The time of the packet connections, which is estimated by subtracting \u2018time of last packet seen\u2019 and \u2018time of first packet seen\u2019",
+        "group": "Connection"
+    },
+    {
+        "key": "src_bytes",
+        "is_num": true,
+        "range": [
+            0,
+            3890855126
+        ],
+        "display_lable": "Source Bytes",
+        "description": "Source bytes which are originated from payload bytes of TCP sequence numbers",
+        "group": "Connection"
+    },
+    {
+        "key": "dst_bytes",
+        "is_num": true,
+        "range": [
+            0,
+            3913853482
+        ],
+        "display_lable": "Destination Bytes",
+        "description": "Destination bytes which are responded payload bytes from TCP sequence numbers",
+        "group": "Connection"
+    },
+    {
+        "key": "conn_state",
+        "is_num": false,
+        "range": [
+            "OTH",
+            "REJ",
+            "RSTO",
+            "RSTOS0",
+            "RSTR",
+            "RSTRH",
+            "S0",
+            "S1",
+            "S2",
+            "S3",
+            "SF",
+            "SH",
+            "SHR"
+        ],
+        "display_lable": "Connection State",
+        "description": "Various connection states, such as S0 (connection without replay), S1 (connection established), and REJ (connection attempt rejected)",
+        "group": "Connection"
+    },
+    {
+        "key": "missed_bytes",
+        "is_num": true,
+        "range": [
+            0,
+            1854527046
+        ],
+        "display_lable": "Missed Bytes",
+        "description": "Number of missing bytes in content gaps",
+        "group": "Connection"
+    },
+    {
+        "key": "src_pkts",
+        "is_num": true,
+        "range": [
+            0,
+            252181
+        ],
+        "display_lable": "Source Packets",
+        "description": "Number of original packets which is estimated from source systems",
+        "group": "Statistical"
+    },
+    {
+        "key": "src_ip_bytes",
+        "is_num": true,
+        "range": [
+            0,
+            47367248
+        ],
+        "display_lable": "Source IP Bytes",
+        "description": "Number of original IP bytes which is the total length of IP header field of source systems",
+        "group": "Statistical"
+    },
+    {
+        "key": "dst_pkts",
+        "is_num": true,
+        "range": [
+            0,
+            313943
+        ],
+        "display_lable": "Destination Packets",
+        "description": "Number of destination packets which is estimated from destination systems",
+        "group": "Statistical"
+    },
+    {
+        "key": "dst_ip_bytes",
+        "is_num": true,
+        "range": [
+            0,
+            86395523
+        ],
+        "display_lable": "Destination IP Bytes",
+        "description": "Number of destination IP bytes which is the total length of IP header field of destination systems",
+        "group": "Statistical"
+    },
+    {
+        "key": "dns_qclass",
+        "is_num": true,
+        "range": [
+            0,
+            32769
+        ],
+        "display_lable": "DNS Query Class",
+        "description": "Values which specifies the DNS query classes",
+        "group": "DNS"
+    },
+    {
+        "key": "dns_qtype",
+        "is_num": true,
+        "range": [
+            0,
+            255
+        ],
+        "display_lable": "DNS Query Type",
+        "description": "Value which specifies the DNS query types",
+        "group": "DNS"
+    },
+    {
+        "key": "dns_rcode",
+        "is_num": true,
+        "range": [
+            0,
+            5
+        ],
+        "display_lable": "DNS Response Code",
+        "description": "Response code values in the DNS responses",
+        "group": "DNS"
+    },
+    {
+        "key": "dns_AA",
+        "is_num": false,
+        "range": [
+            "-",
+            "F",
+            "T"
+        ],
+        "display_lable": "DNS AA",
+        "description": "Authoritative answers of DNS, where T denotes server is authoritative for query",
+        "group": "DNS"
+    },
+    {
+        "key": "dns_RD",
+        "is_num": false,
+        "range": [
+            "-",
+            "F",
+            "T"
+        ],
+        "display_lable": "DNS RD",
+        "description": "Recursion desired of DNS, where T denotes request recursive lookup of query",
+        "group": "DNS"
+    },
+    {
+        "key": "dns_RA",
+        "is_num": false,
+        "range": [
+            "-",
+            "F",
+            "T"
+        ],
+        "display_lable": "DNS RA",
+        "description": "Recursion available of DNS, where T denotes server supports recursive queries",
+        "group": "DNS"
+    },
+    {
+        "key": "dns_rejected",
+        "is_num": false,
+        "range": [
+            "-",
+            "F",
+            "T"
+        ],
+        "display_lable": "DNS Rejected",
+        "description": "DNS rejection, where the DNS queries are rejected by the server",
+        "group": "DNS"
+    },
+    {
+        "key": "ssl_version",
+        "is_num": false,
+        "range": [
+            "-",
+            "TLSv10",
+            "TLSv12",
+            "TLSv13"
+        ],
+        "display_lable": "SSL Version",
+        "description": "SSL version which is offered by the server",
+        "group": "SSL"
+    },
+    {
+        "key": "ssl_cipher",
+        "is_num": false,
+        "range": [
+            "-",
+            "TLS_AES_128_GCM_SHA256",
+            "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+            "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+            "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+        ],
+        "display_lable": "SSL Cipher",
+        "description": "SSL cipher suite which the server chose",
+        "group": "SSL"
+    },
+    {
+        "key": "ssl_resumed",
+        "is_num": false,
+        "range": [
+            "-",
+            "F",
+            "T"
+        ],
+        "display_lable": "SSL Resumed",
+        "description": "SSL flag indicates the session that can be used to initiate new connections, where T refers to the SSL connection is initiated",
+        "group": "SSL"
+    },
+    {
+        "key": "ssl_established",
+        "is_num": false,
+        "range": [
+            "-",
+            "F",
+            "T"
+        ],
+        "display_lable": "SSL Established",
+        "description": "SSL flag indicates establishing connections between two parties, where T refers to establishing the connection",
+        "group": "SSL"
+    },
+    {
+        "key": "http_trans_depth",
+        "is_num": false,
+        "range": [
+            "-",
+            "1",
+            "10",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9"
+        ],
+        "display_lable": "HTTP Transaction Depth",
+        "description": "Pipelined depth into the HTTP connection",
+        "group": "HTTP"
+    },
+    {
+        "key": "http_method",
+        "is_num": false,
+        "range": [
+            "-",
+            "GET",
+            "HEAD",
+            "POST"
+        ],
+        "display_lable": "HTTP Method",
+        "description": "HTTP request methods such as GET, POST and HEAD",
+        "group": "HTTP"
+    },
+    {
+        "key": "http_version",
+        "is_num": false,
+        "range": [
+            "-",
+            "1.1"
+        ],
+        "display_lable": "HTTP Version",
+        "description": "The HTTP versions utilised such as V1.1",
+        "group": "HTTP"
+    },
+    {
+        "key": "http_request_body_len",
+        "is_num": true,
+        "range": [
+            0,
+            2338
+        ],
+        "display_lable": "HTTP Request Body Length",
+        "description": "Actual uncompressed content sizes of the data transferred from the HTTP client",
+        "group": "HTTP"
+    },
+    {
+        "key": "http_response_body_len",
+        "is_num": true,
+        "range": [
+            0,
+            13424384
+        ],
+        "display_lable": "HTTP Response Body Length",
+        "description": "Actual uncompressed content sizes of the data transferred from the HTTP server",
+        "group": "HTTP"
+    },
+    {
+        "key": "http_status_code",
+        "is_num": false,
+        "range": [
+            0,
+            101,
+            200,
+            206,
+            302,
+            304,
+            403,
+            404
+        ],
+        "display_lable": "HTTP Status Code",
+        "description": "Status codes returned by the HTTP server",
+        "group": "HTTP"
+    },
+    {
+        "key": "http_orig_mime_types",
+        "is_num": false,
+        "range": [
+            "-",
+            "application/soap+xml",
+            "application/xml"
+        ],
+        "display_lable": "HTTP Original MIME Types",
+        "description": "Ordered vectors of mime types from source system in the HTTP protocol",
+        "group": "HTTP"
+    },
+    {
+        "key": "http_resp_mime_types",
+        "is_num": false,
+        "range": [
+            "-",
+            "application/ocsp-response",
+            "application/vnd.ms-cab-compressed",
+            "application/x-debian-package",
+            "application/xml",
+            "image/jpeg",
+            "image/png",
+            "text/html",
+            "text/json",
+            "text/plain"
+        ],
+        "display_lable": "HTTP Response MIME Types",
+        "description": "Ordered vectors of mime types from destination system in the HTTP protocol",
+        "group": "HTTP"
+    }
+]

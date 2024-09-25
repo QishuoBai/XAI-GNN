@@ -19,19 +19,14 @@
           v-for="(d, i) in ['train', 'test']"
           :key="d"
           class="d-flex flex-row align-center mt-2 cursor-pointer px-2"
-          @click="show_dataset[i] = !show_dataset[i];add_edge_color_by_filter();"
+          @click="
+            show_dataset[i] = !show_dataset[i];
+            add_edge_color_by_filter();
+          "
           v-ripple
         >
-          <v-icon
-            icon="mdi-check"
-            :size="12"
-            v-if="show_dataset[i]"
-          ></v-icon>
-          <v-icon
-            icon="mdi-close"
-            :size="12"
-            v-if="!show_dataset[i]"
-          ></v-icon>
+          <v-icon icon="mdi-check" :size="12" v-if="show_dataset[i]"></v-icon>
+          <v-icon icon="mdi-close" :size="12" v-if="!show_dataset[i]"></v-icon>
           <div class="text-caption ml-2">{{ d }}</div>
         </div>
       </div>
@@ -41,7 +36,10 @@
           v-for="(type, i) in selected_types"
           :key="type"
           class="d-flex flex-row align-center mt-2 cursor-pointer px-2"
-          @click="show_types[i] = !show_types[i];add_edge_color_by_filter();"
+          @click="
+            show_types[i] = !show_types[i];
+            add_edge_color_by_filter();
+          "
           v-ripple
         >
           <div
@@ -67,7 +65,10 @@
       <div class="px-2">
         <div
           class="d-flex flex-row align-center mt-2 cursor-pointer px-2"
-          @click="show_correct = !show_correct;add_edge_color_by_filter();"
+          @click="
+            show_correct = !show_correct;
+            add_edge_color_by_filter();
+          "
           v-ripple
         >
           <div
@@ -90,7 +91,10 @@
         </div>
         <div
           class="d-flex flex-row align-center mt-2 cursor-pointer px-2"
-          @click="show_wrong = !show_wrong;add_edge_color_by_filter();"
+          @click="
+            show_wrong = !show_wrong;
+            add_edge_color_by_filter();
+          "
           v-ripple
         >
           <div v-if="show_wrong" class="d-flex flex-row align-center">
@@ -177,10 +181,37 @@
     </div>
     <div
       class="position-absolute pa-2 rounded elevation-2 bg-white"
-      style="bottom: 10px; left: 10px; height: 30%; width: 20%; z-index: 999"
-      v-if="true"
+      style="bottom: 10px; left: 10px; width: 20%; z-index: 999"
+      v-if="show_tooltip_node"
     >
-      Tooltip
+      <div class="text-body-2">Node</div>
+      <v-divider></v-divider>
+      <div
+        class="d-flex flex-row justify-space-between align-center text-caption"
+      >
+        <div>IP</div>
+        <div>{{ tooltip_node.ip }}</div>
+      </div>
+    </div>
+    <div
+      class="position-absolute pa-2 rounded elevation-2 bg-white"
+      style="bottom: 10px; left: 10px; width: 20%; z-index: 999"
+      v-if="show_tooltip_edge"
+    >
+      <div class="text-body-2">Edge</div>
+      <v-divider></v-divider>
+      <div
+        class="d-flex flex-row justify-space-between align-center text-caption"
+      >
+        <div>Source IP</div>
+        <div>{{ tooltip_edge.src_ip }}</div>
+      </div>
+      <div
+        class="d-flex flex-row justify-space-between align-center text-caption"
+      >
+        <div>Target IP</div>
+        <div>{{ tooltip_edge.dst_ip }}</div>
+      </div>
     </div>
   </div>
 </template>
@@ -210,7 +241,16 @@ export default {
       show_correct: true,
       show_wrong: true,
       recommendation_cols_layout: [3, 3, 3, 3],
-      show_tooltip: false,
+      show_tooltip_node: false,
+      show_tooltip_edge: false,
+      mouseover_enable: true,
+      tooltip_node: {
+        ip: null,
+      },
+      tooltip_edge: {
+        src_ip: null,
+        dst_ip: null,
+      },
     };
   },
   computed: {
@@ -239,6 +279,9 @@ export default {
     selected_types() {
       return globalStore().selected_types;
     },
+    highlight_edge_id() {
+      return globalStore().highlight_edge_id;
+    },
   },
   watch: {
     // Define watch properties here
@@ -258,6 +301,9 @@ export default {
       const svg_height = this.$refs.svg_container_main.clientHeight - 10;
       const svg_width = this.$refs.svg_container_main.clientWidth;
       d3.select(this.$refs.svg_container_main).html("");
+      this.show_tooltip_edge = false;
+      this.show_tooltip_node = false;
+
       const svg = d3
         .select(this.$refs.svg_container_main)
         .append("svg")
@@ -292,7 +338,7 @@ export default {
         .data(links)
         .join("line")
         .attr("class", (d) => {
-            const classes = [];
+          const classes = [];
           classes.push("graph-lines");
           classes.push("graph-lines-type-" + types[d.type]);
           classes.push("graph-lines-pred-" + types[d.pred]);
@@ -317,14 +363,30 @@ export default {
             return this.graph_link_color_bg;
           }
         })
+        .style("cursor", "pointer")
         .attr("stroke-width", 2)
         .attr("stroke-dasharray", (d) => (d.type == d.pred ? "0" : "5,5"))
         .attr("stroke-opacity", 0.7)
+        .on("click", (event, d) => {
+          globalStore().highlight_edge_id = d.ID;
+          globalStore().highlight_edge_src_ip = d.source.ip;
+          globalStore().highlight_edge_dst_ip = d.target.ip;
+          globalStore().highlight_edge_type = types[d.type];
+          globalStore().highlight_edge_pred = types[d.pred];
+          this.tooltip_edge.src_ip = d.source.ip;
+          this.tooltip_edge.dst_ip = d.target.ip;
+          this.show_tooltip_edge = true;
+          this.mouseover_enable = false;
+        })
         .on("mouseover", (event, d) => {
-          this.show_tooltip = true;
+          if (!this.mouseover_enable) return;
+          this.tooltip_edge.src_ip = d.source.ip;
+          this.tooltip_edge.dst_ip = d.target.ip;
+          this.show_tooltip_edge = true;
         })
         .on("mouseout", (event, d) => {
-          this.show_tooltip = false;
+          if (!this.mouseover_enable) return;
+          this.show_tooltip_edge = false;
         });
       // 画node
       const node = g_main
@@ -334,13 +396,17 @@ export default {
         .join("circle")
         .attr("r", node_radius)
         .attr("fill", this.graph_node_color)
+        .style("cursor", "pointer")
         .attr("stroke", "#fff")
         .attr("stroke-width", 1.5)
         .on("mouseover", (event, d) => {
-          this.show_tooltip = true;
+          if (!this.mouseover_enable) return;
+          this.tooltip_node.ip = d.ip;
+          this.show_tooltip_node = true;
         })
         .on("mouseout", (event, d) => {
-          this.show_tooltip = false;
+          if (!this.mouseover_enable) return;
+          this.show_tooltip_node = false;
         });
       // Add a drag behavior.
       node.call(
@@ -360,6 +426,19 @@ export default {
 
       // 将缩放绑定到svg
       svg.call(zoom);
+      svg.on("click", (event) => {
+        console.log(event.target.tagName);
+        if (event.target.tagName == "svg") {
+          this.show_tooltip_node = false;
+          this.show_tooltip_edge = false;
+          globalStore().highlight_edge_id = null;
+          globalStore().highlight_edge_src_ip = null;
+          globalStore().highlight_edge_dst_ip = null;
+          globalStore().highlight_edge_type = null;
+          globalStore().highlight_edge_pred = null;
+          this.mouseover_enable = true;
+        }
+      });
       // Set the position attributes of links and nodes each time the simulation ticks.
       this.simulation.on("tick", () => {
         link
@@ -371,7 +450,6 @@ export default {
         node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
       });
       this.add_edge_color_by_filter();
-      
     },
     // Reheat the simulation when drag starts, and fix the subject position.
     dragstarted(event) {

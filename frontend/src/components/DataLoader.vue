@@ -5,11 +5,111 @@
     >
       <div>Data Loader</div>
       <div class="d-flex flex-row align-center">
+        <v-dialog v-model="info_dialog" max-width="600">
+          <template v-slot:activator="{ props: activatorProps }">
+            <v-icon
+              icon="mdi-information"
+              :size="18"
+              v-bind="activatorProps"
+            ></v-icon>
+          </template>
+
+          <v-card>
+            <v-card-title class="text-body-1">
+              <v-icon icon="mdi-information" size="small"></v-icon>
+              Dataset Information
+            </v-card-title>
+            <v-card-text>
+              <div>
+                <div
+                  class="d-flex flex-row align-center text-body-2 font-weight-bold"
+                >
+                  <div>Basic</div>
+                  <v-divider class="ml-2"></v-divider>
+                </div>
+                <v-container class="pa-0 text-body-2 mt-2">
+                  <v-row no-gutters>
+                    <v-col cols="3">Name</v-col>
+                    <v-col cols="9">TON_IoT Dataset</v-col>
+                  </v-row>
+                  <v-row no-gutters class="mt-2">
+                    <v-col cols="3">Description</v-col>
+                    <v-col cols="9"
+                      >The TON_IoT datasets are new generations of Internet of
+                      Things (IoT) and Industrial IoT (IIoT) datasets for
+                      evaluating the fidelity and efficiency of different
+                      cybersecurity applications based on Artificial
+                      Intelligence (AI).
+                    </v-col>
+                  </v-row>
+                </v-container>
+                <div
+                  class="d-flex flex-row align-center text-body-2 font-weight-bold"
+                >
+                  <div>Statistical</div>
+                  <v-divider class="ml-2"></v-divider>
+                </div>
+                <v-container class="pa-0 text-body-2 mt-2">
+                  <v-row no-gutters>
+                    <v-col cols="3">Number of Nodes</v-col>
+                    <v-col cols="9">{{ dataset_description.nodes_num }}</v-col>
+                  </v-row>
+                  <v-row no-gutters class="mt-2">
+                    <v-col cols="3">Number of Edges</v-col>
+                    <v-col cols="9">{{ dataset_description.links_num }} </v-col>
+                  </v-row>
+                  <v-row no-gutters class="mt-2">
+                    <v-col cols="3">Number of Types</v-col>
+                    <v-col cols="9"
+                      >{{ dataset_description.type_num.length }}
+                    </v-col>
+                  </v-row>
+                </v-container>
+                <div
+                  class="d-flex flex-row align-center text-body-2 font-weight-bold mt-2"
+                >
+                  <div>Proportion</div>
+                  <v-divider class="ml-2"></v-divider>
+                </div>
+                <v-container class="pa-0 text-body-2 mt-2">
+                  <v-row
+                    v-for="(item, i) in dataset_description.type_num"
+                    :key="i"
+                    no-gutters
+                    class="mt-2"
+                  >
+                    <v-col cols="3">{{ item.type }}</v-col>
+                    <v-col cols="9">
+                      <div class="d-flex flex-row align-center text-caption">
+                        <div
+                          :style="{
+                            height: '20px',
+                            width: (item.num / 300000) * 300 + 'px',
+                            backgroundColor: dataset_desc_bar_color,
+                          }"
+                        ></div>
+                        <div class="ml-2">
+                          - {{ item.num }} ({{
+                            (
+                              (item.num / dataset_description.links_num) *
+                              100
+                            ).toFixed(2)
+                          }}%)
+                        </div>
+                      </div>
+                    </v-col>
+                  </v-row>
+                </v-container>
+              </div>
+            </v-card-text>
+          </v-card>
+        </v-dialog>
         <v-dialog v-model="config_dialog" max-width="600">
           <template v-slot:activator="{ props: activatorProps }">
             <v-icon
               icon="mdi-wrench"
               size="x-small"
+              class="ml-2"
               v-bind="activatorProps"
             ></v-icon>
           </template>
@@ -121,6 +221,7 @@ import edgelist from "@/data/edgelist_ton_iot.json";
 import { globalStore } from "@/store";
 import * as d3 from "d3";
 import { postRequest, getRequest } from "@/utils";
+import dataset_description from "@/data/dataset_description.json";
 
 const types = cm_data.types;
 const max_edges_num = 500;
@@ -129,6 +230,7 @@ export default {
   data: () => ({
     tab: 0,
     config_dialog: false,
+    info_dialog: false,
     types: types,
     selected_types: globalStore().selected_types,
     config_rules: [(v) => v.length == 5 || "Please select 5 types"],
@@ -140,30 +242,38 @@ export default {
     tab_config1_edge_num_limit: max_edges_num / 2,
     tab_config1_edge_id_range: [0, 0],
     tab_config1_edge_id_range_max: 1,
+    dataset_description: dataset_description,
+    dataset_desc_bar_color: globalStore().colors.dataset_desc_bar_color,
   }),
   computed: {},
   watch: {
-    tab_config0_edge_id_range(newVal, oldVal){
-        const [newMin, newMax] = newVal;
-        const [oldMin, oldMax] = oldVal;
-        if(newMax == oldMax){
-            // 变小
-            if(newMax - newMin > this.tab_config0_edge_num_limit){
-                this.tab_config0_edge_id_range = [newMin, newMin + this.tab_config0_edge_num_limit];
-            }
-        }else{
-            // 变大
-            if(newMax - newMin > this.tab_config0_edge_num_limit){
-                this.tab_config0_edge_id_range = [newMax - this.tab_config0_edge_num_limit, newMax];
-            }
+    tab_config0_edge_id_range(newVal, oldVal) {
+      const [newMin, newMax] = newVal;
+      const [oldMin, oldMax] = oldVal;
+      if (newMax == oldMax) {
+        // 变小
+        if (newMax - newMin > this.tab_config0_edge_num_limit) {
+          this.tab_config0_edge_id_range = [
+            newMin,
+            newMin + this.tab_config0_edge_num_limit,
+          ];
         }
+      } else {
+        // 变大
+        if (newMax - newMin > this.tab_config0_edge_num_limit) {
+          this.tab_config0_edge_id_range = [
+            newMax - this.tab_config0_edge_num_limit,
+            newMax,
+          ];
+        }
+      }
     },
-    tab_config0_edge_num_limit(val){
-        const [min, max] = this.tab_config0_edge_id_range;
-        if(max - min > val){
-            this.tab_config0_edge_id_range = [min, min + val];
-        }
-    }
+    tab_config0_edge_num_limit(val) {
+      const [min, max] = this.tab_config0_edge_id_range;
+      if (max - min > val) {
+        this.tab_config0_edge_id_range = [min, min + val];
+      }
+    },
   },
   methods: {
     confirmConfig() {
@@ -333,28 +443,28 @@ export default {
         });
       }
     },
-    loadData(){
-        if(this.tab == 0){
-            const selected_types = globalStore().selected_types;
-            let request_data = {
-                row_type: selected_types[this.tab_config0_selected_cell[0]],
-                col_type: selected_types[this.tab_config0_selected_cell[1]],
-                edge_num: this.tab_config0_edge_num_limit,
-                edge_id_range: this.tab_config0_edge_id_range,
-            }
-            postRequest("/api/data_loader/cm", request_data).then((res) => {
-                console.log(res.data);
-                const all_ids = res.data.all_ids;
-                const target_ids = res.data.target_ids;
-                const nodes = res.data.nodes;
-                const links = res.data.links;
-                globalStore().all_ids = [...all_ids];
-                globalStore().target_ids = [...target_ids];
-                globalStore().nodes = [...nodes];
-                globalStore().links = [...links];
-            });
-        }
-    }
+    loadData() {
+      if (this.tab == 0) {
+        const selected_types = globalStore().selected_types;
+        let request_data = {
+          row_type: selected_types[this.tab_config0_selected_cell[0]],
+          col_type: selected_types[this.tab_config0_selected_cell[1]],
+          edge_num: this.tab_config0_edge_num_limit,
+          edge_id_range: this.tab_config0_edge_id_range,
+        };
+        postRequest("/api/data_loader/cm", request_data).then((res) => {
+          console.log(res.data);
+          const all_ids = res.data.all_ids;
+          const target_ids = res.data.target_ids;
+          const nodes = res.data.nodes;
+          const links = res.data.links;
+          globalStore().all_ids = [...all_ids];
+          globalStore().target_ids = [...target_ids];
+          globalStore().nodes = [...nodes];
+          globalStore().links = [...links];
+        });
+      }
+    },
   },
   mounted() {
     if (this.tab == 0) {

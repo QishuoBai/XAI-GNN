@@ -5,15 +5,41 @@
       class="border-b-thin pa-1 px-3 bg-grey-darken-4 d-flex flex-row justify-space-between align-center"
     >
       <div class="text-h6 d-flex flex-row align-center">
-        <!-- <img src="/logo_white.png" style="height: 30px" /> -->
         <div class="ml-0">GNNExplorer</div>
       </div>
       <div class="text-body-2 text-grey-lighten-1 d-flex flex-row align-center">
-        <!-- <img src="/logo_white.png" style="height: 30px" /> -->
         <div class="ml-0">
           A visualization approach for exploring and analyzing Graph Neural
           Networks (GNNs)
         </div>
+        <v-dialog v-model="about_dialog" max-width="600">
+          <template v-slot:activator="{ props: activatorProps }">
+            <div
+              class="d-flex flex-row align-center ml-4 cursor-pointer"
+              v-bind="activatorProps"
+            >
+              <v-icon icon="mdi-help-circle" size="x-small"></v-icon>
+              <div>About</div>
+            </div>
+          </template>
+          <v-card>
+            <v-card-title class="text-body-1">
+              <v-icon icon="mdi-help-circle" size="small"></v-icon>
+              About
+            </v-card-title>
+            <v-card-text class="text-body-2">
+                <p>
+                    <span class="font-weight-bold">GNNExplorer</span> is a tool designed to help users visualize and analyze Graph Neural Networks (GNNs). 
+                    It provides various views and functionalities to load data, explore the main graph structure, 
+                    inspect features, and review the history of interactions.
+                </p>
+                <p class="mt-2">
+                    This tool aims to make it easier for researchers and practitioners to understand the behavior 
+                    and performance of GNNs through interactive visualizations.
+                </p>
+            </v-card-text>
+          </v-card>
+        </v-dialog>
       </div>
     </div>
     <div class="flex-grow-1 d-flex flex-row w-100" style="height: 0px">
@@ -34,7 +60,7 @@
           <HistoryView />
         </div>
         <div class="flex-grow-1 bg-white rounded">
-            <InfoView />
+          <InfoView />
         </div>
       </div>
     </div>
@@ -43,7 +69,9 @@
 
 <script>
 export default {
-  data: () => ({}),
+  data: () => ({
+    about_dialog: false,
+  }),
   computed: {},
   watch: {},
   methods: {},

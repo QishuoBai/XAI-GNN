@@ -1,0 +1,46 @@
+{
+    "nodes_num": 473560,
+    "links_num": 461043,
+    "type_num": [
+        {
+            "type": "normal",
+            "num": 300000
+        },
+        {
+            "type": "backdoor",
+            "num": 20000
+        },
+        {
+            "type": "ddos",
+            "num": 20000
+        },
+        {
+            "type": "dos",
+            "num": 20000
+        },
+        {
+            "type": "injection",
+            "num": 20000
+        },
+        {
+            "type": "password",
+            "num": 20000
+        },
+        {
+            "type": "ransomware",
+            "num": 20000
+        },
+        {
+            "type": "scanning",
+            "num": 20000
+        },
+        {
+            "type": "xss",
+            "num": 20000
+        },
+        {
+            "type": "mitm",
+            "num": 1043
+        }
+    ]
+}

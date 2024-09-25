@@ -3,6 +3,9 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import pandas as pd
 import numpy as np
+import json
+from utlis import get_edge_feature_values 
+import random
 
 app = Flask(__name__)
 
@@ -11,6 +14,8 @@ CORS(app)
 edgelist = pd.read_csv('../Experiment/datasets/TON-IoT/edgelist_ton_iot.csv')
 type_map = {'normal': 0, 'backdoor': 1, 'ddos': 2, 'dos': 3, 'injection': 4, 'password': 5, 'ransomware': 6, 'scanning': 7, 'xss': 8, 'mitm': 9}
 predictdetail = pd.read_csv('../Experiment/datasets/TON-IoT/predictdetail_ton_iot.csv')
+featurevalues = pd.read_csv('../Experiment/datasets/TON-IoT/featurevalues_ton_iot.csv')
+feature_description = json.load(open('../Experiment/datasets/TON-IoT/feature_description.json'))
 
 # 主页路由
 @app.route('/hello')
@@ -52,12 +57,25 @@ def data_loader_cm():
     links = links.to_dict(orient='records')
     return {'target_ids': target_ids.tolist(), 'all_ids': all_ids.tolist(), 'nodes': nodes, 'links': links}
 
-@app.route('/api/get_predict_detail', methods=['POST'])
-def get_predict_detail():
+@app.route('/api/get_edge_detail', methods=['POST'])
+def get_edge_detail():
     data = request.get_json()
     print(data)
     id = data['ID']
-    return predictdetail[predictdetail['ID'] == id]['pred_origin'].values[0]
+    res = {}
+    res['ID'] = id
+    res['src_ip'] = edgelist[edgelist['ID'] == id]['src_ip'].values[0]
+    res['dst_ip'] = edgelist[edgelist['ID'] == id]['dst_ip'].values[0]
+    res['type'] = int(edgelist[edgelist['ID'] == id]['type'].values[0])
+    res['pred'] = int(edgelist[edgelist['ID'] == id]['pred'].values[0])
+    res['pred_detail'] = predictdetail[predictdetail['ID'] == id]['pred_origin'].values[0]
+    res['is_train'] = int(edgelist[edgelist['ID'] == id]['is_train'].values[0])
+    res['feature_values'] = get_edge_feature_values(featurevalues, id, list(map(lambda x: x['key'], feature_description)))
+    res['feature_importance'] = []
+    # 获取特征重要性
+    res['feature_importance'].append({'method': 'gnnexplainer', 'importance': [random.random() for _ in range(len(feature_description))]})
+    print(res)
+    return res
 
 # 启动应用
 if __name__ == '__main__':
