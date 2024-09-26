@@ -4,7 +4,7 @@
       class="text-body-1 font-weight-bold d-flex flex-row justify-space-between"
     >
       <div>Features View</div>
-      <div v-if="edge_details.ID" class="text-caption d-flex flex-row">
+      <div v-if="edge_details.ID !== null" class="text-caption d-flex flex-row">
         <div>ID: {{edge_details.ID}}</div>
         <div class="mx-6">Label: {{edge_details.type}}</div>
         <div>Predict: {{edge_details.pred}}</div>

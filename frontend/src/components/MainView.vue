@@ -450,6 +450,13 @@ export default {
         node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
       });
       this.add_edge_color_by_filter();
+      //   添加默认点击的点
+      const d = links[0];
+      globalStore().highlight_edge_id = d.ID;
+      globalStore().highlight_edge_src_ip = d.source.ip;
+      globalStore().highlight_edge_dst_ip = d.target.ip;
+      globalStore().highlight_edge_type = types[d.type];
+      globalStore().highlight_edge_pred = types[d.pred];
     },
     // Reheat the simulation when drag starts, and fix the subject position.
     dragstarted(event) {
