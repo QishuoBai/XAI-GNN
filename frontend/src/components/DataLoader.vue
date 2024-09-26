@@ -212,6 +212,63 @@
         Load Data
       </div>
     </div>
+    <v-expand-x-transition
+      ><v-card
+        id="cmTooltip"
+        class="elevation-5 border-thin rounded"
+        v-show="cm_Tooltip.show"
+        style="height: auto; width: auto; position: absolute; z-index: 9999"
+      >
+        <v-card-title class="text-body-1">
+          <v-icon icon="mdi-information" size="small"></v-icon>
+          Information
+        </v-card-title>
+        <v-card-text class="text-body-2 mt-2 mb-0 text-no-wrap">
+          <div
+            class="d-flex flex-row align-center text-body-2 font-weight-bold"
+          >
+            <div>Basic</div>
+            <v-divider class="ml-2"></v-divider>
+          </div>
+          <div class="d-flex flex-row align-center justify-space-between">
+            <div>Label</div>
+            <div>{{ cm_Tooltip.label }}</div>
+          </div>
+          <div class="d-flex flex-row align-center justify-space-between">
+            <div>Predict</div>
+            <div>{{ cm_Tooltip.pred }}</div>
+          </div>
+          <div class="d-flex flex-row align-center justify-space-between">
+            <div>Num</div>
+            <div>{{ cm_Tooltip.num }}</div>
+          </div>
+          <div
+            class="d-flex flex-row align-center text-body-2 font-weight-bold"
+          >
+            <div>Proportion</div>
+            <v-divider class="ml-2"></v-divider>
+          </div>
+          <div class="d-flex flex-row align-center justify-space-between">
+            <div class="mr-3">In entire dataset</div>
+            <div class="d-flex flex-row align-center text-caption">
+              <div
+                ref="svg_container_tooltip_0"
+              ></div>
+              <div>{{ cm_Tooltip.proportion_all }}%</div>
+            </div>
+          </div>
+          <div class="d-flex flex-row align-center justify-space-between">
+            <div class="mr-3">In current label</div>
+            <div class="d-flex flex-row align-center text-caption">
+              <div
+                ref="svg_container_tooltip_1"
+              ></div>
+              <div>{{ cm_Tooltip.proportion_label }}%</div>
+            </div>
+          </div>
+        </v-card-text>
+      </v-card></v-expand-x-transition
+    >
   </div>
 </template>
 
@@ -244,6 +301,15 @@ export default {
     tab_config1_edge_id_range_max: 1,
     dataset_description: dataset_description,
     dataset_desc_bar_color: globalStore().colors.dataset_desc_bar_color,
+    cm_Tooltip: {
+      show: false,
+      label: "",
+      pred: "",
+      num: -1,
+      proportion_all: -1,
+      proportion_label: -1,
+      svg_size: 100,
+    },
   }),
   computed: {},
   watch: {
@@ -356,6 +422,117 @@ export default {
             .text(matrix[i][j]);
           current_g.on("click", () => {
             this.select_cell(matrix, i, j);
+          });
+          current_g.on("mouseover", (event) => {
+            this.cm_Tooltip.label = selected_types[i];
+            this.cm_Tooltip.pred = selected_types[j];
+            this.cm_Tooltip.num = matrix[i][j];
+            this.cm_Tooltip.proportion_all = (
+              (matrix[i][j] / d3.sum(matrix.flat())) *
+              100
+            ).toFixed(4);
+            this.cm_Tooltip.proportion_label = (
+              (matrix[i][j] / d3.sum(matrix[i])) *
+              100
+            ).toFixed(4);
+            d3.select("#cmTooltip")
+              .style("left", event.pageX + 20 + "px")
+              .style("top", event.pageY + "px");
+            d3.select(this.$refs.svg_container_tooltip_0).html("");
+            d3.select(this.$refs.svg_container_tooltip_1).html("");
+
+            const svg_tooltip_width =
+              this.cm_Tooltip.svg_size;
+            const svg_tooltip_height =
+              this.cm_Tooltip.svg_size;
+            const svg_tooltip_0 = d3
+              .select(this.$refs.svg_container_tooltip_0)
+              .append("svg")
+              .attr("viewBox", `0 0 ${svg_tooltip_width} ${svg_tooltip_height}`)
+              .attr("overflow", "visible")
+              .attr("width", svg_tooltip_width)
+              .attr("height", svg_tooltip_height);
+            const svg_tooltip_1 = d3
+              .select(this.$refs.svg_container_tooltip_1)
+              .append("svg")
+              .attr("viewBox", `0 0 ${svg_tooltip_width} ${svg_tooltip_height}`)
+              .attr("overflow", "visible")
+              .attr("width", svg_tooltip_width)
+              .attr("height", svg_tooltip_height);
+            const arc = d3
+              .arc()
+              .innerRadius(0)
+              .outerRadius(
+                d3.min([svg_tooltip_width, svg_tooltip_height]) / 2 - 10
+              );
+            const pie = d3
+              .pie()
+              .sort(null)
+              .value((d) => d.value);
+            const data_0 = [
+              { label: "Current", value: matrix[i][j] },
+              {
+                label: "Other",
+                value: d3.sum(cm_data.cm.flat()) - matrix[i][j],
+              },
+            ];
+            const data_1 = [
+              { label: "Current", value: matrix[i][j] },
+              {
+                label: "Other",
+                value:
+                  d3.sum(cm_data.cm[this.types.indexOf(selected_types[i])]) -
+                  matrix[i][j],
+              },
+            ];
+            const g_tooltip_0 = svg_tooltip_0
+              .append("g")
+              .attr(
+                "transform",
+                `translate(${svg_tooltip_width / 2}, ${svg_tooltip_height / 2})`
+              );
+            const g_tooltip_1 = svg_tooltip_1
+              .append("g")
+              .attr(
+                "transform",
+                `translate(${svg_tooltip_width / 2}, ${svg_tooltip_height / 2})`
+              );
+            g_tooltip_0
+              .selectAll("path")
+              .data(pie(data_0))
+              .join("path")
+              .attr("d", arc)
+              .attr("fill-opacity", (d) => {
+                return d.data.label == "Other"
+                  ? 1
+                  : opacity_scale(matrix[i][j]);
+              })
+              .attr("fill", (d) => {
+                return d.data.label == "Other"
+                  ? globalStore().colors.graph_link_color_bg
+                  : globalStore().colors.cm_color;
+              });
+            g_tooltip_1
+              .selectAll("path")
+              .data(pie(data_1))
+              .join("path")
+              .attr("d", arc)
+              .attr("fill-opacity", (d) => {
+                return d.data.label == "Other"
+                  ? 1
+                  : opacity_scale(matrix[i][j]);
+              })
+              .attr("fill", (d) => {
+                return d.data.label == "Other"
+                  ? globalStore().colors.graph_link_color_bg
+                  : globalStore().colors.cm_color;
+              });
+            this.$nextTick(() => {
+              this.cm_Tooltip.show = true;
+            });
+          });
+          current_g.on("mouseout", () => {
+            this.cm_Tooltip.show = false;
           });
         }
       }
