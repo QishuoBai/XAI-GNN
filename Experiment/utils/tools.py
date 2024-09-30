@@ -15,7 +15,7 @@ def load_ton_iot_train_test(train_file, test_file, bin=True):
         y_train, y_test = X_train.type, X_test.type
 
     # norm_cols = ['spkts', 'dload', 'dloss', 'dpkts', 'service', 'sbytes', 'sloss', 'sintpkt', 'sload', 'sjit', 'dintpkt', 'synack', 'djit', 'tcprtt', 'dtcpb', 'dmeansz', 'is_sm_ips_ports', 'src_ip', 'ct_dst_sport_ltm', 'ct_ftp_cmd', 'ct_flw_http_mthd', 'dbytes', 'trans_depth', 'proto', 'stcpb', 'dwin', 'ackdat', 'is_ftp_login', 'smeansz', 'dst_ip', 'swin', 'dur', 'state', 'ct_src_dport_ltm']
-    norm_cols = list(set(list(X_train.columns))  - set(list(['ID', 'src_ip', 'dst_ip', 'label', 'type'])) )
+    norm_cols = X_train.columns.tolist()[3:-2]
     # norm_cols = ['dns_rcode', 'http_status_code', 'ssl_version', 'http_resp_mime_types', 'duration', 'dns_qclass', 'dns_rejected', 'dns_qtype', 'proto', 'src_bytes', 'dst_pkts', 'src_pkts', 'src_ip_bytes', 'missed_bytes', 'conn_state', 'http_method', 'ssl_resumed', 'dst_ip_bytes', 'dns_RD', 'dst_bytes', 'ssl_established', 'dns_RA', 'http_orig_mime_types', 'http_response_body_len', 'http_version', 'service', 'http_request_body_len', 'dns_AA', 'ssl_cipher', 'http_trans_depth']
     X_train['h'] = X_train[norm_cols].values.tolist()
     X_test['h'] = X_test[norm_cols].values.tolist()
