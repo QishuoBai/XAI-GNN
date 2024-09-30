@@ -117,12 +117,26 @@
           <v-card>
             <v-card-title class="text-body-1">
               <v-icon icon="mdi-wrench" size="small"></v-icon>
-              Select 5 Types to Analyze
+              Data Loader Configuration
             </v-card-title>
             <v-card-text>
+              <div class="d-flex flex-row text-caption align-center mb-6">
+                Number of Edges Upper Bound
+                <v-slider
+                  v-model="max_edges_num"
+                  :min="0"
+                  :max="dataset_description.links_num"
+                  :step="1"
+                  :thumb-size="10"
+                  :track-size="2"
+                  thumb-label
+                  hide-details
+                />
+                {{max_edges_num}}/{{dataset_description.links_num}}
+              </div>
               <v-select
                 chips
-                label="Types"
+                label="Select 5 Types to Analyze"
                 :items="types"
                 multiple
                 density="comfortable"
@@ -251,18 +265,14 @@
           <div class="d-flex flex-row align-center justify-space-between">
             <div class="mr-3">In entire dataset</div>
             <div class="d-flex flex-row align-center text-caption">
-              <div
-                ref="svg_container_tooltip_0"
-              ></div>
+              <div ref="svg_container_tooltip_0"></div>
               <div>{{ cm_Tooltip.proportion_all }}%</div>
             </div>
           </div>
           <div class="d-flex flex-row align-center justify-space-between">
             <div class="mr-3">In current label</div>
             <div class="d-flex flex-row align-center text-caption">
-              <div
-                ref="svg_container_tooltip_1"
-              ></div>
+              <div ref="svg_container_tooltip_1"></div>
               <div>{{ cm_Tooltip.proportion_label }}%</div>
             </div>
           </div>
@@ -441,10 +451,8 @@ export default {
             d3.select(this.$refs.svg_container_tooltip_0).html("");
             d3.select(this.$refs.svg_container_tooltip_1).html("");
 
-            const svg_tooltip_width =
-              this.cm_Tooltip.svg_size;
-            const svg_tooltip_height =
-              this.cm_Tooltip.svg_size;
+            const svg_tooltip_width = this.cm_Tooltip.svg_size;
+            const svg_tooltip_height = this.cm_Tooltip.svg_size;
             const svg_tooltip_0 = d3
               .select(this.$refs.svg_container_tooltip_0)
               .append("svg")
