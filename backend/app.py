@@ -4,7 +4,7 @@ from flask_cors import CORS
 import pandas as pd
 import numpy as np
 import json
-from utlis import get_edge_feature_values 
+from utlis import get_edge_feature_values, cal_gnnexplainer_result
 import random
 
 app = Flask(__name__)
@@ -72,9 +72,15 @@ def get_edge_detail():
     res['is_train'] = int(edgelist[edgelist['ID'] == id]['is_train'].values[0])
     res['feature_values'] = get_edge_feature_values(featurevalues, id, list(map(lambda x: x['key'], feature_description)))
     res['feature_importance'] = []
-    # 获取特征重要性
-    res['feature_importance'].append({'method': 'gnnexplainer', 'importance': [random.random() for _ in range(len(feature_description))]})
-    print(res)
+    return res
+
+@app.route('/api/get_gnnexplainer_result', methods=['POST'])
+def get_gnnexplainer_result():
+    data = request.get_json()
+    print(data)
+    explain_id = data['ID']
+    user_coeffs = data['user_coeffs']
+    res = cal_gnnexplainer_result(explain_id, user_coeffs)
     return res
 
 # 启动应用

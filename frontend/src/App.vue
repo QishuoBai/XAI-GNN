@@ -47,7 +47,9 @@
         <div style="height: 50%" class="bg-white rounded mb-1">
           <DataLoader />
         </div>
-        <div class="flex-grow-1 bg-white rounded"></div>
+        <div class="flex-grow-1 bg-white rounded">
+            <ControlView />
+        </div>
       </div>
       <div class="flex-grow-1 ma-1 ml-0 d-flex flex-column">
         <div style="height: 70%" class="bg-white rounded mb-1">

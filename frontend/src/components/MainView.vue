@@ -282,6 +282,9 @@ export default {
     highlight_edge_id() {
       return globalStore().highlight_edge_id;
     },
+    highlight_edge_importance(){
+        return globalStore().highlight_edge_importance;
+    }
   },
   watch: {
     // Define watch properties here
@@ -292,6 +295,14 @@ export default {
         console.log(globalStore().links);
         this.drawGraph(globalStore().nodes, globalStore().links);
       });
+    },
+    highlight_edge_importance(newVal, oldVal){
+        console.log("highlight_edge_importance", newVal);
+      if (newVal !== oldVal && newVal !== null) {
+        this.draw_edge_importance(newVal);
+      }else if(newVal == null){
+        this.clear_edge_importance();
+      }
     },
   },
   methods: {
@@ -333,7 +344,7 @@ export default {
         .force("y", d3.forceY(svg_height / 2));
       //   画link
       const link = g_main
-        .append("g")
+        .append("g").attr('id', 'mainview-g-links')
         .selectAll("line")
         .data(links)
         .join("line")
@@ -514,6 +525,32 @@ export default {
         return this.type_color[selected_types.indexOf(current_type)];
       });
     },
+
+    // 根据边重要性调整边的样式（粗细等）
+    draw_edge_importance(data){
+        console.log(data);
+        // 清洗数据，将id相同的记录合并并求平均
+        const edge_importance = {};
+        data.forEach((d) => {
+            if (edge_importance[d.ID] === undefined) {
+                edge_importance[d.ID] = [];
+            }
+            edge_importance[d.ID].push(d.importance);
+        });
+        const edge_importance_avg = {};
+        Object.keys(edge_importance).forEach((k) => {
+            edge_importance_avg[k] =
+                edge_importance[k].reduce((a, b) => a + b) / edge_importance[k].length;
+        });
+        // 根据平均重要性调整边的粗细
+        d3.select('#mainview-g-links').selectAll('line').attr('stroke-width', (d) => {
+            return edge_importance_avg[d.ID] * 5 < 1 ? 1 : edge_importance_avg[d.ID] * 5;
+        });
+    },
+    // 清除边的重要性样式
+    clear_edge_importance(){
+        d3.select('#mainview-g-links').selectAll('line').attr('stroke-width', 2);
+    }
   },
   mounted() {
     // Your component's mounted hook goes here

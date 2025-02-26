@@ -163,7 +163,7 @@
       <div class="d-flex flex-row">
         <div
           :class="
-            'flex-grow-1 text-body-2 d-flex flex-row align-center justify-center cursor-pointer py-1 ' +
+            'w-50 text-body-2 d-flex flex-row align-center justify-center cursor-pointer py-1 ' +
             (tab == 0 ? 'bg-grey' : '')
           "
           v-ripple
@@ -173,7 +173,7 @@
         </div>
         <div
           :class="
-            'flex-grow-1 text-body-2 d-flex flex-row align-center justify-center cursor-pointer py-1 ' +
+            'w-50 text-body-2 d-flex flex-row align-center justify-center cursor-pointer py-1 ' +
             (tab == 1 ? 'bg-grey' : '')
           "
           v-ripple

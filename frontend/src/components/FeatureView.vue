@@ -5,32 +5,69 @@
     >
       <div>Features View</div>
       <div v-if="edge_details.ID !== null" class="text-caption d-flex flex-row">
-        <div>ID: {{edge_details.ID}}</div>
-        <div class="mx-6">Label: {{edge_details.type}}</div>
-        <div>Predict: {{edge_details.pred}}</div>
+        <div>ID: {{ edge_details.ID }}</div>
+        <div class="mx-6">Label: {{ edge_details.type }}</div>
+        <div>Predict: {{ edge_details.pred }}</div>
       </div>
     </div>
     <v-divider></v-divider>
     <div class="d-flex flex-row">
-      <div
-        v-for="(g, i) in group_names"
-        :key="g"
-        :style="{
-          width: (group_nums[i] / feature_description.length) * 100 + '%',
-        }"
-        class="d-flex flex-row align-center justify-space-between"
-      >
-        <v-divider vertical></v-divider>
-        <v-divider class="mx-2"></v-divider>
-        <div class="text-caption">{{ g }}</div>
-        <v-divider class="mx-2"></v-divider>
-        <v-divider vertical></v-divider>
+      <div style="width: 20px"></div>
+      <div class="flex-grow-1 d-flex flex-row">
+        <div
+          v-for="(g, i) in group_names"
+          :key="g"
+          :style="{
+            width: (group_nums[i] / feature_description.length) * 100 + '%',
+          }"
+          class="d-flex flex-row align-center justify-space-between"
+        >
+          <v-divider vertical></v-divider>
+          <v-divider class="mx-2"></v-divider>
+          <div class="text-caption">{{ g }}</div>
+          <v-divider class="mx-2"></v-divider>
+          <v-divider vertical></v-divider>
+        </div>
       </div>
     </div>
     <div class="flex-grow-1 d-flex flex-column w-100 h-100">
-      <div style="height: 50%" ref="svg_container_0"></div>
+      <div class="d-flex flex-row h-50">
+        <div style="width: 20px">
+          <div
+            class="h-100 d-flex flex-row justify-center align-center text-caption"
+          >
+            <div
+              style="
+                transform: rotate(-90deg);
+                transform-origin: center center;
+                white-space: nowrap;
+              "
+            >
+              Values
+            </div>
+          </div>
+        </div>
+        <div class="flex-grow-1" ref="svg_container_0"></div>
+      </div>
       <v-divider></v-divider>
-      <div style="height: 50%" ref="svg_container_1"></div>
+      <div class="d-flex flex-row h-50">
+        <div style="width: 20px">
+          <div
+            class="h-100 d-flex flex-row justify-center align-center text-caption"
+          >
+            <div
+              style="
+                transform: rotate(-90deg);
+                transform-origin: center center;
+                white-space: nowrap;
+              "
+            >
+              Importance
+            </div>
+          </div>
+        </div>
+        <div class="flex-grow-1" ref="svg_container_1"></div>
+      </div>
     </div>
   </div>
 </template>
@@ -82,6 +119,9 @@ export default {
     highlight_edge_id() {
       return globalStore().highlight_edge_id;
     },
+    highlight_feature_importance() {
+      return globalStore().highlight_feature_importance;
+    },
   },
   watch: {
     // Define the watch properties
@@ -96,12 +136,15 @@ export default {
         postRequest("/api/get_edge_detail", { ID: newVal }).then((res) => {
           console.log(res);
           this.draw_values(res.data.feature_values, res.data.type);
-          this.draw_importance(
-            res.data.feature_importance[0].importance,
-            res.data.type,
-            res.data.feature_importance[0].method
-          );
         });
+      }
+    },
+    highlight_feature_importance(newVal, oldVal) {
+      console.log("highlight_feature_importance", newVal);
+      if (newVal !== oldVal && newVal !== null) {
+        this.draw_importance(newVal, types.indexOf(this.edge_details.type));
+      } else if (newVal == null) {
+        this.clear_importance();
       }
     },
   },
@@ -150,13 +193,14 @@ export default {
           // numerical
           g.append("line")
             .attr("x1", item_width / 2)
-            .attr("y1", padding_y)
+            .attr("y1", svg_height - padding_y)
             .attr("x2", item_width / 2)
             .attr(
               "y2",
-              values_scales[i](feature_values[i]) *
-                (svg_height - 2 * padding_y) +
-                padding_y
+              svg_height -
+                padding_y -
+                values_scales[i](feature_values[i]) *
+                  (svg_height - 2 * padding_y)
             )
             .attr("stroke", () => {
               const type_str = types[edge_type];
@@ -223,7 +267,7 @@ export default {
         }
       }
     },
-    draw_importance(importance_scores, edge_type, importance_method) {
+    draw_importance(importance_scores, edge_type) {
       const svg_height = this.$refs.svg_container_1.clientHeight - 10;
       const svg_width = this.$refs.svg_container_1.clientWidth;
       d3.select(this.$refs.svg_container_1).html("");
@@ -265,13 +309,14 @@ export default {
         const importance_scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
         g.append("line")
           .attr("x1", item_width / 2)
-          .attr("y1", padding_y)
+          .attr("y1", svg_height - padding_y)
           .attr("x2", item_width / 2)
           .attr(
             "y2",
-            importance_scale(importance_scores[i]) *
-              (svg_height - 2 * padding_y) +
-              padding_y
+            svg_height -
+              padding_y -
+              importance_scale(importance_scores[i]) *
+                (svg_height - 2 * padding_y)
           )
           .attr("stroke", () => {
             const type_str = types[edge_type];
@@ -286,6 +331,9 @@ export default {
           .attr("stroke-width", 5)
           .attr("stroke-linecap", "round");
       }
+    },
+    clear_importance() {
+      d3.select(this.$refs.svg_container_1).html("");
     },
   },
 };
