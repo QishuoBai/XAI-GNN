@@ -36,7 +36,7 @@ coeffs = {
         "feat_size": 1.0,
         "feat_ent": 0.1,
         "edge_pred": 3.0,
-        "edge_size": 1.0,
+        "edge_size": 50,
         "edge_ent": 0.1,
     }
 
@@ -140,8 +140,10 @@ def cal_gnnexplainer_result(explain_id, user_coeffs):
     explainer_result['edge_importance'] = []
     edge_mask_list = edge_mask.sigmoid().cpu().detach().numpy().squeeze().tolist()
     IDs_list = G.edata['ID'].cpu().detach().numpy().tolist()
+    types_list = G.edata['type'].cpu().detach().numpy().tolist()
+    pred_list = pred_origin.argmax(dim=1).cpu().detach().numpy().tolist()
     for i in range(len(edge_mask_list)):
-        explainer_result['edge_importance'].append({'ID': IDs_list[i], 'importance': edge_mask_list[i]})
+        explainer_result['edge_importance'].append({'ID': IDs_list[i], 'importance': edge_mask_list[i], 'type': types_list[i], 'pred': pred_list[i]})
     explainer_result['pred_origin'] = pred_origin[G.edata['ID'] == eid].argmax(dim=1).cpu().detach().numpy().tolist()[0]
     explainer_result['pred_feature_masked'] = pred_feature_masked[G.edata['ID'] == eid].argmax(dim=1).cpu().detach().numpy().tolist()[0]
     explainer_result['pred_edge_masked'] = pred_edge_masked[G.edata['ID'] == eid].argmax(dim=1).cpu().detach().numpy().tolist()[0]

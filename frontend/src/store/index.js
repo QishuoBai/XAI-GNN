@@ -22,10 +22,12 @@ export const globalStore = defineStore("cluster", {
             highlight_edge_id: null, // 选中用于分析的边
             highlight_edge_src_ip: null,
             highlight_edge_dst_ip: null,
-            highlight_edge_type: null,
+            highlight_edge_type: null, // string
             highlight_edge_pred: null,
             highlight_feature_importance: null,
             highlight_edge_importance: null,
+
+            explore_history: [],
         };
     },
 });

@@ -138,46 +138,48 @@
       </div>
     </div>
     <div
-      class="position-absolute pa-2 rounded elevation-2 bg-white"
-      style="top: 10px; right: 10px; height: 80%; width: 20%; z-index: 999"
+      class="position-absolute pa-2 rounded elevation-2 bg-white d-flex flex-column"
+      style="top: 10px; right: 10px; max-height: 80%; z-index: 999"
     >
       <div
         class="text-body-2 font-weight-bold d-flex flex-row justify-center align-center"
       >
-        Recommendation Panel
+        Edges Contribution
       </div>
       <v-divider></v-divider>
-      <!-- <div class="d-flex flex-row align-center text-body-2">
-        <div class="d-flex flex-row align-center justify-center">ID</div>
-      </div> -->
-      <v-container class="pa-0">
-        <v-row no-gutters class="text-caption">
-          <v-col
-            :cols="recommendation_cols_layout[0]"
-            class="d-flex flex-row justify-center align-center"
-            >ID</v-col
-          >
-          <v-divider vertical></v-divider>
-          <v-col
-            :cols="recommendation_cols_layout[1]"
-            class="d-flex flex-row justify-center align-center"
-            >Label</v-col
-          >
-          <v-divider vertical></v-divider>
-          <v-col
-            :cols="recommendation_cols_layout[2]"
-            class="d-flex flex-row justify-center align-center"
-            >Predict</v-col
-          >
-          <v-divider vertical></v-divider>
-          <v-col
-            :cols="recommendation_cols_layout[3]"
-            class="d-flex flex-row justify-center align-center"
-            >Details</v-col
-          >
-        </v-row>
-        <v-divider></v-divider>
-      </v-container>
+      <div class="d-flex flex-row align-center text-caption">
+        <div
+          :style="{ width: panel_cols_layout[0] + 'px' }"
+          class="d-flex flex-row align-center justify-center"
+        >
+          ID
+        </div>
+        <v-divider vertical></v-divider>
+        <div
+          :style="{ width: panel_cols_layout[1] + 'px' }"
+          class="d-flex flex-row align-center justify-center"
+        >
+          Label
+        </div>
+        <v-divider vertical></v-divider>
+        <div
+          :style="{ width: panel_cols_layout[2] + 'px' }"
+          class="d-flex flex-row align-center justify-center"
+        >
+          Predict
+        </div>
+        <v-divider vertical></v-divider>
+        <div
+          :style="{ width: panel_cols_layout[3] + 'px' }"
+          class="d-flex flex-row align-center justify-center"
+        >
+          Contribution Score
+        </div>
+      </div>
+      <v-divider></v-divider>
+      <div class="flex-grow-1 overflow-y-auto">
+        <div ref="svg_contribution_panel"></div>
+      </div>
     </div>
     <div
       class="position-absolute pa-2 rounded elevation-2 bg-white"
@@ -240,7 +242,7 @@ export default {
       show_dataset: [true, true],
       show_correct: true,
       show_wrong: true,
-      recommendation_cols_layout: [3, 3, 3, 3],
+      panel_cols_layout: [50, 70, 70, 140],
       show_tooltip_node: false,
       show_tooltip_edge: false,
       mouseover_enable: true,
@@ -282,9 +284,9 @@ export default {
     highlight_edge_id() {
       return globalStore().highlight_edge_id;
     },
-    highlight_edge_importance(){
-        return globalStore().highlight_edge_importance;
-    }
+    highlight_edge_importance() {
+      return globalStore().highlight_edge_importance;
+    },
   },
   watch: {
     // Define watch properties here
@@ -296,12 +298,45 @@ export default {
         this.drawGraph(globalStore().nodes, globalStore().links);
       });
     },
-    highlight_edge_importance(newVal, oldVal){
-        console.log("highlight_edge_importance", newVal);
+    highlight_edge_importance(newVal, oldVal) {
+      console.log("highlight_edge_importance", newVal);
       if (newVal !== oldVal && newVal !== null) {
-        this.draw_edge_importance(newVal);
-      }else if(newVal == null){
+        const data = newVal;
+        if (data === null) return [];
+        // 清洗数据，将id相同的记录合并并求平均
+        const edge_importance = {};
+        data.forEach((d) => {
+          if (this.all_ids.includes(d.ID)) {
+            if (edge_importance[d.ID] === undefined) {
+              edge_importance[d.ID] = [];
+            }
+            edge_importance[d.ID].push(d.importance);
+          }
+        });
+        const edge_importance_avg = {};
+        Object.keys(edge_importance).forEach((k) => {
+          edge_importance_avg[k] =
+            edge_importance[k].reduce((a, b) => a + b) /
+            edge_importance[k].length;
+        });
+        const edge_contribution_list = [];
+        Object.keys(edge_importance_avg).forEach((k) => {
+          const d = data.find((d) => d.ID == k);
+          edge_contribution_list.push({
+            ID: d.ID,
+            type: types[d.type],
+            pred: types[d.pred],
+            importance: edge_importance_avg[k],
+          });
+        });
+        //   按照重要性排序
+        edge_contribution_list.sort((a, b) => b.importance - a.importance);
+
+        this.draw_edge_importance(edge_importance_avg);
+        this.draw_edge_contribution_list(edge_contribution_list);
+      } else if (newVal == null) {
         this.clear_edge_importance();
+        this.clear_edge_contribution_list();
       }
     },
   },
@@ -344,7 +379,8 @@ export default {
         .force("y", d3.forceY(svg_height / 2));
       //   画link
       const link = g_main
-        .append("g").attr('id', 'mainview-g-links')
+        .append("g")
+        .attr("id", "mainview-g-links")
         .selectAll("line")
         .data(links)
         .join("line")
@@ -527,30 +563,175 @@ export default {
     },
 
     // 根据边重要性调整边的样式（粗细等）
-    draw_edge_importance(data){
-        console.log(data);
-        // 清洗数据，将id相同的记录合并并求平均
-        const edge_importance = {};
-        data.forEach((d) => {
-            if (edge_importance[d.ID] === undefined) {
-                edge_importance[d.ID] = [];
-            }
-            edge_importance[d.ID].push(d.importance);
-        });
-        const edge_importance_avg = {};
-        Object.keys(edge_importance).forEach((k) => {
-            edge_importance_avg[k] =
-                edge_importance[k].reduce((a, b) => a + b) / edge_importance[k].length;
-        });
-        // 根据平均重要性调整边的粗细
-        d3.select('#mainview-g-links').selectAll('line').attr('stroke-width', (d) => {
-            return edge_importance_avg[d.ID] * 5 < 1 ? 1 : edge_importance_avg[d.ID] * 5;
+    draw_edge_importance(data) {
+      // 根据平均重要性调整边的粗细
+      const max_width = 10;
+      d3.select("#mainview-g-links")
+        .selectAll("line")
+        .attr("stroke-width", (d) => {
+          return data[d.ID] * max_width < 1 ? 1 : data[d.ID] * max_width;
         });
     },
     // 清除边的重要性样式
-    clear_edge_importance(){
-        d3.select('#mainview-g-links').selectAll('line').attr('stroke-width', 2);
-    }
+    clear_edge_importance() {
+      d3.select("#mainview-g-links").selectAll("line").attr("stroke-width", 2);
+    },
+    // 画edge contribution list面板
+    draw_edge_contribution_list(data) {
+      console.log(data);
+      const line_height = 40;
+      const svg_height = line_height * data.length;
+      const svg_width = this.$refs.svg_contribution_panel.clientWidth;
+      d3.select(this.$refs.svg_contribution_panel).html("");
+      const panel_cols_layout = this.panel_cols_layout;
+      const svg = d3
+        .select(this.$refs.svg_contribution_panel)
+        .append("svg")
+        .attr("viewBox", `0 0 ${svg_width} ${svg_height}`)
+        .attr("overflow", "visible")
+        .attr("width", svg_width)
+        .attr("height", svg_height);
+      // 画背景
+      svg
+        .append("rect")
+        .attr("width", svg_width)
+        .attr("height", svg_height)
+        .attr("fill", this.graph_node_color)
+        .attr("opacity", 0.1);
+      const inner_line_height = 35;
+      svg
+        .append("g")
+        .selectAll("rect")
+        .data(data)
+        .join("rect")
+        .attr("x", 0)
+        .attr(
+          "y",
+          (d, i) => i * line_height + (line_height - inner_line_height) / 2
+        )
+        .attr("rx", 5)
+        .attr("ry", 5)
+        .attr("width", svg_width)
+        .attr("height", inner_line_height)
+        .attr("fill", 'none')
+        .attr("stroke", '#000')
+        .attr("stroke-width", d => {
+            if (globalStore().highlight_edge_id == d.ID) {
+                return 1;
+            } else {
+                return 0;
+            }
+        });
+      // 写IDs
+      svg
+        .append("g")
+        .selectAll("text")
+        .data(data)
+        .join("text")
+        .attr("class", "text-caption")
+        .attr("x", panel_cols_layout[0] / 2)
+        .attr("y", (d, i) => i * line_height + line_height / 2)
+        .attr("text-anchor", "middle")
+        .attr("alignment-baseline", "middle")
+        .text((d) => d.ID);
+      // 写 types
+      svg
+        .append("g")
+        .selectAll("text")
+        .data(data)
+        .join("text")
+        .attr("class", "text-caption")
+        .attr("x", panel_cols_layout[0] + panel_cols_layout[1] / 2)
+        .attr("y", (d, i) => i * line_height + line_height / 2)
+        .attr("text-anchor", "middle")
+        .attr("alignment-baseline", "middle")
+        .text((d) => d.type);
+      // 写 pred
+      svg
+        .append("g")
+        .selectAll("text")
+        .data(data)
+        .join("text")
+        .attr("class", "text-caption")
+        .attr(
+          "x",
+          panel_cols_layout[0] + panel_cols_layout[1] + panel_cols_layout[2] / 2
+        )
+        .attr("y", (d, i) => i * line_height + line_height / 2)
+        .attr("text-anchor", "middle")
+        .attr("alignment-baseline", "middle")
+        .text((d) => d.pred);
+      // 画 importance 折线
+      // 先画 ticks
+      svg
+        .append("g")
+        .selectAll("line")
+        .data(data)
+        .join("line")
+        .attr(
+          "x1",
+          panel_cols_layout[0] + panel_cols_layout[1] + panel_cols_layout[2]
+        )
+        .attr("y1", (d, i) => i * line_height + line_height / 2)
+        .attr(
+          "x2",
+          (d) =>
+            panel_cols_layout[0] +
+            panel_cols_layout[1] +
+            panel_cols_layout[2] +
+            panel_cols_layout[3]
+        )
+        .attr("y2", (d, i) => i * line_height + line_height / 2)
+        .attr("stroke", this.graph_node_color)
+        .attr("stroke-width", 2);
+      // 再画 importance
+      svg
+        .append("g")
+        .selectAll("line")
+        .data(data)
+        .join("line")
+        .attr(
+          "x1",
+          (d) =>
+            panel_cols_layout[0] + panel_cols_layout[1] + panel_cols_layout[2]
+        )
+        .attr("y1", (d, i) => i * line_height + line_height / 2)
+        .attr(
+          "x2",
+          (d) =>
+            panel_cols_layout[0] +
+            panel_cols_layout[1] +
+            panel_cols_layout[2] +
+            panel_cols_layout[3] * d.importance
+        )
+        .attr("y2", (d, i) => i * line_height + line_height / 2)
+        .attr("stroke", (d) => {
+          if (globalStore().selected_types.includes(d.type)) {
+            return this.type_color[
+              globalStore().selected_types.indexOf(d.type)
+            ];
+          }
+        })
+        .attr("stroke-width", 5)
+        .attr("stroke-linecap", "round");
+      // // 画 importance 折线
+      // const line = d3.line()
+      //     .x((d) => panel_cols_layout[0] + panel_cols_layout[1] + panel_cols_layout[2] + panel_cols_layout[3] * d.importance)
+      //     .y((d, i) => i * line_height + line_height / 2);
+      // svg
+      //     .append("g")
+      //     .selectAll("path")
+      //     .data(data)
+      //     .join("path")
+      //     .attr("d", line(data))
+      //     .attr("fill", "none")
+      //     .attr("stroke", "black")
+      //     .attr("stroke-width", 2);
+    },
+    // 清除edge contribution list面板
+    clear_edge_contribution_list() {
+      d3.select(this.$refs.svg_contribution_panel).html("");
+    },
   },
   mounted() {
     // Your component's mounted hook goes here

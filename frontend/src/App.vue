@@ -58,7 +58,7 @@
         <div class="flex-grow-1 bg-white rounded"><FeatureView /></div>
       </div>
       <div style="width: 20%" class="ma-1 ml-0 d-flex flex-column">
-        <div style="height: 40%" class="bg-white rounded mb-1">
+        <div style="height: 40%" class="bg-white rounded mb-1 flex-shrink-0">
           <HistoryView />
         </div>
         <div class="flex-grow-1 bg-white rounded">
@@ -84,5 +84,31 @@ export default {
 <style>
 * {
   font-family: "Roboto";
+}
+.hide-scrollbar::-webkit-scrollbar {
+  width: 0px; /* 滚动条宽度 */
+}
+/* 自定义 Webkit 滚动条样式 */
+::-webkit-scrollbar {
+  width: 5px; /* 滚动条宽度 */
+  height: 10px; /* 水平滚动条高度 */
+  cursor: pointer;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #00000049; /* 滚动条滑块颜色 */
+  border-radius: 6px; /* 滑块圆角 */
+  border: 2px solid #fff; /* 滑块与轨道之间的间隙 */
+  cursor: pointer;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1; /* 滚动条轨道颜色 */
+  border-radius: 6px; /* 轨道圆角 */
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+  /* 隐藏滚动条的按钮 */
 }
 </style>

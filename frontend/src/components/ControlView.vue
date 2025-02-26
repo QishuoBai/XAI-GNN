@@ -51,7 +51,7 @@
             <v-slider
               v-model="coeff.value"
               :min="i == 0 ? 100 : 0"
-              :max="i == 0 ? 2000 : 5"
+              :max="i == 0 ? 2000 : 10"
               :step="i == 0 ? 100 : 0.1"
               :thumb-size="10"
               :track-size="2"
@@ -122,8 +122,8 @@ export default {
     ],
     edge_coeffs: [
       { label: "Training Epochs", name: "edge_epochs", value: 10 },
-      { label: "Prediction Loss Weight", name: "edge_pred", value: 2.0 },
-      { label: "Size Loss Weight", name: "edge_size", value: 3.0 },
+      { label: "Prediction Loss Weight", name: "edge_pred", value: 5.0 },
+      { label: "Size Loss Weight", name: "edge_size", value: 1.0 },
       { label: "Entropy Loss Weight", name: "edge_ent", value: 1.0 },
     ],
   }),

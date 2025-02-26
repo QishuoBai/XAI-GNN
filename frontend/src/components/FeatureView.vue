@@ -135,6 +135,11 @@ export default {
         this.edge_details.pred = globalStore().highlight_edge_pred;
         postRequest("/api/get_edge_detail", { ID: newVal }).then((res) => {
           console.log(res);
+        //   更新 explore_history
+            const explore_history = globalStore().explore_history;
+            if(explore_history.map(d => d.ID).indexOf(res.data.ID) === -1){
+                globalStore().explore_history = [res.data, ...explore_history,];
+            }
           this.draw_values(res.data.feature_values, res.data.type);
         });
       }

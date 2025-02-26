@@ -68,7 +68,7 @@ def get_edge_detail():
     res['dst_ip'] = edgelist[edgelist['ID'] == id]['dst_ip'].values[0]
     res['type'] = int(edgelist[edgelist['ID'] == id]['type'].values[0])
     res['pred'] = int(edgelist[edgelist['ID'] == id]['pred'].values[0])
-    res['pred_detail'] = predictdetail[predictdetail['ID'] == id]['pred_origin'].values[0]
+    res['pred_detail'] = list(map(float, predictdetail[predictdetail['ID'] == id]['pred_origin'].values[0][1:-1].split(',')))
     res['is_train'] = int(edgelist[edgelist['ID'] == id]['is_train'].values[0])
     res['feature_values'] = get_edge_feature_values(featurevalues, id, list(map(lambda x: x['key'], feature_description)))
     res['feature_importance'] = []
