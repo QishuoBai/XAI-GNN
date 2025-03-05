@@ -4,7 +4,7 @@
       class="text-body-1 font-weight-bold d-flex flex-row justify-space-between align-end"
     >
       <div>Analysis Assistant</div>
-      <div class="text-caption">Powered by DeepSeek</div>
+      <div class="text-caption">Supported by DeepSeek</div>
     </div>
     <v-divider></v-divider>
     <div class="flex-grow-1 overflow-y-auto" style="height: 0px">
